@@ -1,7 +1,7 @@
 use math::round;
 
 pub const N: i32 = 64;
-pub const SCALE: i32 = 8;
+pub const SCALE: i32 = 12;
 
 const ITER: i32 = 10;
 
@@ -52,7 +52,6 @@ impl Fluid {
         self.vx[idx] += ax;
         self.vy[idx] += ay;
     }
-
     pub fn step(&mut self) {
         let vx: &mut [f32] = &mut self.vx;
         let vy: &mut [f32] = &mut self.vy;
@@ -92,6 +91,15 @@ impl Fluid {
                 );
             }
         }
+    }
+    pub fn set_viscosity(&mut self, viscosity: f32) {
+        self.visc = viscosity;
+    }
+    pub fn set_diffusion(&mut self, diffusion: f32) {
+        self.diff = diffusion;
+    }
+    pub fn set_color(&mut self, color: (u8,u8,u8)) {
+        self.color = color;
     }
 }
 
@@ -211,6 +219,7 @@ fn advect(
 
     set_bnd(b, d);
 }
+
 
 fn project(velocity_x: &mut [f32], velocity_y: &mut [f32], p: &mut [f32], div: &mut [f32]) {
     for j in 1..(N - 1) {

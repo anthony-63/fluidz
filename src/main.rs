@@ -38,43 +38,63 @@ async fn main() {
     let mut fps_counter = 0;
     let mut fps_text = "FPS: ".to_string();
     let mut pmouse = (0, 0);
-    let mut fluid_thick = Fluid::new(0.15, 0.0, 0.0001, (0xFF, 0x00, 0x00));
-    let mut fluid_thin = Fluid::new(0.15, 0.0, 0.000005, (0x00, 0xFF, 0x00));
+    let mut visc_slider = 0.0000001;
+    let mut diffusion_slider = 0.0000001;
+    let mut density_slider = 100.;
+    let mut fluid_red: u8 = 0xff;
+    let mut fluid_green: u8 = 0xff;
+    let mut fluid_blue: u8 = 0xff;
+    let mut fluid = Fluid::new(0.15, diffusion_slider, visc_slider, (fluid_red, fluid_green, fluid_blue));
+
     loop {
         cap_fps(60);
 
-        fluid_thick.step();
-        fluid_thin.step();
+        fluid.step();
         if pmouse == (0, 0) {
             pmouse = (mouse_position().0 as i32, mouse_position().1 as i32);
         }
         if is_mouse_button_down(MouseButton::Left) {
-            fluid_thick.add_density(
+            fluid.add_density(
                 mouse_position().0 as i32 / fluid::SCALE,
                 mouse_position().1 as i32 / fluid::SCALE,
-                300.,
+                density_slider,
             );
-            fluid_thick.add_velocity(
-                mouse_position().0 as i32 / fluid::SCALE,
-                mouse_position().1 as i32 / fluid::SCALE,
-                ((mouse_position().0 as i32 / fluid::SCALE) - (pmouse.0 / fluid::SCALE)) as f32,
-                ((mouse_position().1 as i32 / fluid::SCALE) - (pmouse.1 / fluid::SCALE)) as f32,
-            );
-        } else if is_mouse_button_down(MouseButton::Right) {
-            fluid_thin.add_density(
-                mouse_position().0 as i32 / fluid::SCALE,
-                mouse_position().1 as i32 / fluid::SCALE,
-                300.,
-            );
-            fluid_thin.add_velocity(
+            fluid.add_velocity(
                 mouse_position().0 as i32 / fluid::SCALE,
                 mouse_position().1 as i32 / fluid::SCALE,
                 ((mouse_position().0 as i32 / fluid::SCALE) - (pmouse.0 / fluid::SCALE)) as f32,
                 ((mouse_position().1 as i32 / fluid::SCALE) - (pmouse.1 / fluid::SCALE)) as f32,
             );
         }
-        fluid_thick.render_d();
-        fluid_thin.render_d();
+        if is_key_pressed(KeyCode::Backspace) {
+            fluid = Fluid::new(0.15, 0.0, visc_slider, (fluid_red, fluid_green, fluid_blue));
+        }
+        fluid.render_d();
+        egui_macroquad::ui(|egui_ctx| {
+            egui::Window::new("Variables")
+                .show(egui_ctx, |ui| {  
+                    ui
+                        .add(egui::Slider::new(&mut visc_slider, 0.0..=0.00005).text("Viscosity"));
+                    ui
+                        .add(egui::Slider::new(&mut diffusion_slider, 0.0..=0.00005).text("Diffusion"));
+                    ui
+                        .add(egui::Slider::new(&mut density_slider, 0.0..=1000.).text("Density"));
+                    ui
+                        .add(egui::Slider::new(&mut fluid_red, 0..=255).text("R"));
+                    ui
+                        .add(egui::Slider::new(&mut fluid_green, 0..=255).text("G"));
+                    ui
+                        .add(egui::Slider::new(&mut fluid_blue, 0..=255).text("B"));
+                    if ui.button("Clear").clicked() {
+                        fluid = Fluid::new(0.15, 0.0, visc_slider, (fluid_red, fluid_green, fluid_blue));
+                    }
+                    
+                });
+        });
+        fluid.set_viscosity(visc_slider);
+        fluid.set_diffusion(diffusion_slider);
+        fluid.set_color((fluid_red, fluid_green, fluid_blue));
+        egui_macroquad::draw();
         draw_fps(&mut fps_counter, &mut fps_text);
         pmouse = (mouse_position().0 as i32, mouse_position().1 as i32);
         next_frame().await
