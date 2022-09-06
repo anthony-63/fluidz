@@ -1,7 +1,7 @@
 # fluidz
 A basic fluid simulation written in Rust, using the macroquad library. 
 
-![Image](https://cdn.discordapp.com/attachments/883118255278030899/1016858202773655613/unknown.png "liquids")
+![Image](https://cdn.discordapp.com/attachments/883118255278030899/1016858848960729188/unknown.png "liquids")
 
 How to run
 ```
