@@ -1,7 +1,7 @@
 use math::round;
 
-pub const N: i32 = 64;
-pub const SCALE: i32 = 14;
+pub const N: i32 = 300;
+pub const SCALE: i32 = 3;
 pub const ITER: i32 = 1;
 
 pub fn diffuse(b: i32, x: &mut [f32], x0: &mut [f32], diff: f32, dt: f32) {
